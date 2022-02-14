@@ -14,7 +14,6 @@ import com.skyly.skylysdk.model.OfferWallRequest;
 import com.skyly.skylysdk.utils.AeSimpleSHA1;
 import com.skyly.skylysdk.utils.DeviceUtils;
 import com.skyly.skylysdk.utils.HTTPRequestTask;
-import com.skyly.skylysdk.utils.IPUtils;
 
 import org.json.JSONException;
 
@@ -110,7 +109,6 @@ public class SkylySDK {
         queryParams.put("is_tablet", DeviceUtils.isTablet(context) ? "1" : "0");
         queryParams.put("country", Locale.getDefault().getCountry());
         queryParams.put("locale", Locale.getDefault().getLanguage().startsWith("fr") ? "fr" : "en");
-        queryParams.put("ip", IPUtils.getIPAddress(true));
 
         queryParams.put("userid", request.getUserId());
         queryParams.put("zip", request.getZipCode());
