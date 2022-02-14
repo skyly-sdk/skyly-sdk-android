@@ -130,7 +130,12 @@ public class SkylySDK {
         }
 
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        queryParams.put("carrier", telephonyManager.getNetworkOperatorName());
+        String plmn = telephonyManager.getSimOperator();
+        if (!TextUtils.isEmpty(plmn)) {
+            String mcc = plmn.substring(0, 3);
+            String mnc = plmn.substring(3);
+            queryParams.put("carrier", mcc + "-" + mnc);
+        }
 
         AdvertisingIdClient.Info adInfo = AdvertisingIdClient.getAdvertisingIdInfo(context);
         if (!adInfo.isLimitAdTrackingEnabled()) {
