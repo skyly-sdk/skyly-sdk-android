@@ -1,7 +1,6 @@
 package com.skyly.skylysdk.utils;
 
 import android.os.AsyncTask;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -12,49 +11,23 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Set;
 
 public class HTTPRequestTask extends AsyncTask<String, Integer, String> {
 
     private final HTTPRequestTaskCompletionHandler completionHandler;
-    private final Map<String, String> queryParams;
 
-    public HTTPRequestTask(Map<String, String> queryParams, HTTPRequestTaskCompletionHandler completionHandler) {
-        this.queryParams = queryParams;
+    public HTTPRequestTask(HTTPRequestTaskCompletionHandler completionHandler) {
         this.completionHandler = completionHandler;
-    }
-
-    private String encodeValue(String value) throws UnsupportedEncodingException {
-        return URLEncoder.encode(value, "utf-8");
     }
 
     @Override
     protected String doInBackground(String... params) {
         String _url = params[0];
         try {
-            StringBuilder urlStringBuilder = new StringBuilder(_url);
-
-            Set<Map.Entry<String, String>> entrySet = queryParams.entrySet();
-            String prefix = "?";
-            for (Map.Entry<String, String> entry : entrySet) {
-                String value = entry.getValue();
-                if (TextUtils.isEmpty(value)) {
-                    continue;
-                }
-                urlStringBuilder.append(prefix)
-                        .append(entry.getKey())
-                        .append("=")
-                        .append(encodeValue(value));
-                prefix = "&";
-            }
-
-            URL url = new URL(urlStringBuilder.toString());
+            URL url = new URL(_url);
             Log.d(SkylySDK.LOG_TAG, "calling url : " + url);
 
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();

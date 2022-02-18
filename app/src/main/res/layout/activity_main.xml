@@ -6,13 +6,43 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/getOffers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="getOffers"
+            android:text="Get offers programmatically" />
+
+        <Button
+            android:id="@+id/copyUrl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="copyUrl"
+            android:text="Copy offer wall url" />
+
+        <Button
+            android:id="@+id/openBrowser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="openBrowser"
+            android:text="Open wall in browser" />
+
+        <Button
+            android:id="@+id/openWebview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="openWebView"
+            android:text="Open wall in WebView" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

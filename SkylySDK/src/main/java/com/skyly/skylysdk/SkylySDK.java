@@ -1,11 +1,15 @@
 package com.skyly.skylysdk;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.WorkerThread;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.skyly.skylysdk.jsonmodel.FeedItem;
@@ -17,12 +21,15 @@ import com.skyly.skylysdk.utils.HTTPRequestTask;
 
 import org.json.JSONException;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class SkylySDK {
 
@@ -52,6 +59,115 @@ public class SkylySDK {
         }
     }
 
+    private enum Endpoint {
+        API_FEED_V2("/api/feed/v2"), HOSTED_WALL("/wall");
+
+        private final String endpoint;
+
+        Endpoint(String endpoint) {
+            this.endpoint = endpoint;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+    }
+
+    private String encodeValue(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, "utf-8");
+    }
+
+    private String getUrl(Context context, OfferWallRequest request, Endpoint endpoint) throws Exception {
+        String url = "https://" + this.apiDomain + endpoint.getEndpoint();
+        Map<String, String> queryParams = getQueryParams(context, request);
+
+        StringBuilder urlStringBuilder = new StringBuilder(url);
+
+        Set<Map.Entry<String, String>> entrySet = queryParams.entrySet();
+        String prefix = "?";
+        for (Map.Entry<String, String> entry : entrySet) {
+            String value = entry.getValue();
+            if (TextUtils.isEmpty(value)) {
+                continue;
+            }
+            urlStringBuilder.append(prefix)
+                    .append(entry.getKey())
+                    .append("=")
+                    .append(encodeValue(value));
+            prefix = "&";
+        }
+        return urlStringBuilder.toString();
+    }
+
+    /**
+     * Return the formatted OfferWall url.
+     * Convenient if you want to display the offer wall in your own webview
+     * Warning: do not call this from the main thread, it will crash.
+     *
+     * @param context
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @WorkerThread
+    public String getHostedOfferWallUrl(Context context, OfferWallRequest request) throws Exception {
+        return this.getUrl(context, request, Endpoint.HOSTED_WALL);
+    }
+
+    public enum OfferWallPresentationMode {
+        WEB_VIEW, BROWSER;
+    }
+
+    /**
+     * Show the OfferWall for you, either in the device browser or an embedded WebView
+     *
+     * @param context
+     * @param request
+     * @param presentationMode BROWSER or WEB_VIEW
+     */
+    public void showOfferWall(Context context, OfferWallRequest request, OfferWallPresentationMode presentationMode) {
+        try {
+            checkConfig();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "", e);
+            return;
+        }
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
+                    showOfferWall(context, request, presentationMode);
+                }
+            }.start();
+            return;
+        }
+
+        try {
+            String url = this.getHostedOfferWallUrl(context, request);
+            switch (presentationMode) {
+                case BROWSER:
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    context.startActivity(browserIntent);
+                    break;
+                case WEB_VIEW:
+                    Intent intent = new Intent(context, SkylyWebAppActivity.class);
+                    intent.putExtra(SkylyWebAppActivity.EXTRA_URL, url);
+                    context.startActivity(intent);
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "", e);
+        }
+    }
+
+    /**
+     * Lets you fetch available offers programmatically. You will be responsible to display them in your own UI.
+     *
+     * @param context
+     * @param request
+     * @param completionHandler
+     */
     public void getOfferWall(Context context, OfferWallRequest request, OfferWallRequestCompletionHandler completionHandler) {
         try {
             checkConfig();
@@ -73,9 +189,8 @@ public class SkylySDK {
         }
 
         try {
-            String url = "https://" + this.apiDomain + "/api/feed/v2/";
-            Map<String, String> queryParams = getQueryParams(context, request);
-            new HTTPRequestTask(queryParams, result -> {
+            String url = this.getUrl(context, request, Endpoint.API_FEED_V2);
+            new HTTPRequestTask(result -> {
                 if (TextUtils.isEmpty(result)) {
                     completionHandler.onComplete(new ArrayList<>());
                     return;
