@@ -2,4 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.skyly.skylysdk">
 
+    <application>
+        <activity
+            android:name=".SkylyWebAppActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SkylyOfferwalSDKExample.NoActionBar" />
+    </application>
+
 </manifest>
