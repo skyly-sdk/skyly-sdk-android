@@ -6,7 +6,7 @@
         <activity
             android:name=".SkylyWebAppActivity"
             android:exported="false"
-            android:theme="@style/Theme.SkylyOfferwalSDKExample.NoActionBar" />
+            android:theme="@style/NoActionBar" />
     </application>
 
 </manifest>
